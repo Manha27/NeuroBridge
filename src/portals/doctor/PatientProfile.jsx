@@ -1,19 +1,48 @@
+import { patientsData } from "../../data/patientsData";
+
+import {
+  predictRisk,
+  getMonitoringFrequency,
+  getSupportLevel,
+  getVulnerabilityFlag,
+  getExerciseRecommendation,
+} from "../../utils/predictionLogic";
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { 
-  Users, Activity, ClipboardList, Pill, CalendarDays, 
-  ArrowLeft, Check, Plus, Edit, PlusCircle, Award, 
-  BookOpen, Video, ShieldCheck, Heart
+import {
+  Users,
+  Activity,
+  ClipboardList,
+  Pill,
+  CalendarDays,
+  ArrowLeft,
+  Check,
+  Plus,
+  Edit,
+  PlusCircle,
+  Award,
+  BookOpen,
+  Video,
+  ShieldCheck,
+  Heart,
 } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 import { useApp } from "../../context/AppContext";
 
 export default function DoctorPatientProfile() {
   const { id } = useParams();
   const { db, addPrescription, addClinicalNote, addCarePlanTask } = useApp();
-  
+
   const [activeTab, setActiveTab] = useState("overview"); // overview | cognitive | prescriptions | careplan | notes
-  
+
   // Modals & inputs
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
   const [newMedName, setNewMedName] = useState("");
@@ -27,17 +56,33 @@ export default function DoctorPatientProfile() {
 
   const [newRoutineSection, setNewRoutineSection] = useState("Morning Routine");
   const [newRoutineTask, setNewRoutineTask] = useState("");
+  
+  const risk = predictRisk(patient.mmse, patient.cdr);
 
+  const monitoring = getMonitoringFrequency(patient.age, patient.cdr);
+
+  const support = getSupportLevel(patient.cluster);
+
+  const vulnerability = getVulnerabilityFlag(patient.ses, patient.cdr);
+
+  const exercises = getExerciseRecommendation(patient.educ, patient.mmse);
   // Retrieve matching patient from database
   const patient = db.patients.find((p) => p.id === id) || db.patients[0];
-  if (!patient) return <div className="text-center p-12">No patient profile loaded.</div>;
+  if (!patient)
+    return <div className="text-center p-12">No patient profile loaded.</div>;
 
   const handleAddPrescriptionSubmit = (e) => {
     e.preventDefault();
     if (!newMedName || !newMedDosage) return;
 
-    addPrescription(newMedName, newMedDosage, newMedFreq, newMedPeriod, newMedTime);
-    
+    addPrescription(
+      newMedName,
+      newMedDosage,
+      newMedFreq,
+      newMedPeriod,
+      newMedTime,
+    );
+
     // Clear
     setNewMedName("");
     setNewMedDosage("");
@@ -60,15 +105,16 @@ export default function DoctorPatientProfile() {
 
     addCarePlanTask(newRoutineSection, newRoutineTask);
     setNewRoutineTask("");
-    alert(`Task "${newRoutineTask}" successfully pushed to caregiver's daily routine checklists!`);
+    alert(
+      `Task "${newRoutineTask}" successfully pushed to caregiver's daily routine checklists!`,
+    );
   };
 
   return (
     <div className="space-y-8 text-left font-sans text-[15px]">
-      
       {/* Header and Back Link */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <Link 
+        <Link
           to="/doctor/dashboard"
           className="py-2.5 px-5 bg-white border border-border hover:border-text-primary rounded-full transition-all text-xs font-bold active:scale-95 flex items-center gap-1.5"
         >
@@ -87,36 +133,127 @@ export default function DoctorPatientProfile() {
       {/* Patient Profile Summary Card */}
       <section className="bg-white border border-border p-6 rounded-lg shadow-soft flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-center gap-4">
-          <img 
-            src={patient.photo} 
-            alt={patient.name} 
-            className="h-16 w-16 rounded-full object-cover border border-border shadow-xs" 
+          <img
+            src={patient.photo}
+            alt={patient.name}
+            className="h-16 w-16 rounded-full object-cover border border-border shadow-xs"
           />
           <div className="text-left space-y-1">
-            <h2 className="text-xl font-bold text-text-primary">{patient.name}</h2>
-            <p className="text-xs text-text-secondary font-medium">Age: {patient.age} • Stage: <span className="font-bold text-accent">{patient.stage}</span></p>
-            <p className="text-[10px] text-text-secondary">Enrolled since: {patient.sinceDate} • Health File: ID-{patient.id}</p>
+            <h2 className="text-xl font-bold text-text-primary">
+              {patient.name}
+            </h2>
+            <p className="text-xs text-text-secondary font-medium">
+              Age: {patient.age} • Stage:{" "}
+              <span className="font-bold text-accent">{patient.stage}</span>
+            </p>
+            <p className="text-[10px] text-text-secondary">
+              Enrolled since: {patient.sinceDate} • Health File: ID-{patient.id}
+            </p>
           </div>
         </div>
 
         <div className="flex gap-2 flex-wrap">
           {["BP", "Pulse", "O2 Sat"].map((metName, idx) => {
-            const vitValue = metName === "BP" ? patient.vitals.bloodPressure : metName === "Pulse" ? `${patient.vitals.heartRate} bpm` : patient.vitals.oxygenSaturation;
+            const vitValue =
+              metName === "BP"
+                ? patient.vitals.bloodPressure
+                : metName === "Pulse"
+                  ? `${patient.vitals.heartRate} bpm`
+                  : patient.vitals.oxygenSaturation;
             return (
-              <div key={metName} className="bg-bg border border-border py-2.5 px-5 rounded-lg text-center min-w-[90px]">
-                <p className="text-[9px] uppercase font-bold text-text-secondary">{metName}</p>
-                <p className="text-xs font-bold text-text-primary mt-1">{vitValue}</p>
+              <div
+                key={metName}
+                className="bg-bg border border-border py-2.5 px-5 rounded-lg text-center min-w-[90px]"
+              >
+                <p className="text-[9px] uppercase font-bold text-text-secondary">
+                  {metName}
+                </p>
+                <p className="text-xs font-bold text-text-primary mt-1">
+                  {vitValue}
+                </p>
               </div>
             );
           })}
         </div>
       </section>
+      <div className="grid md:grid-cols-2 gap-6 mt-8">
+        {/* Risk Prediction */}
+        <div className="bg-slate-900 p-6 rounded-2xl">
+          <h2 className="text-2xl font-bold mb-4">
+            AI Cognitive Risk Prediction
+          </h2>
 
+          <div
+            className={`text-xl font-semibold mb-3 ${
+              risk.color === "green"
+                ? "text-green-400"
+                : risk.color === "yellow"
+                  ? "text-yellow-400"
+                  : "text-red-400"
+            }`}
+          >
+            {risk.level}
+          </div>
+
+          <p className="text-gray-300">{risk.recommendation}</p>
+        </div>
+
+        {/* Monitoring */}
+        <div className="bg-slate-900 p-6 rounded-2xl">
+          <h2 className="text-2xl font-bold mb-4">Monitoring Recommendation</h2>
+
+          <div className="text-3xl font-bold text-blue-400">{monitoring}</div>
+
+          <p className="text-gray-400 mt-3">
+            Based on age and dementia severity analysis.
+          </p>
+        </div>
+
+        {/* Support Cluster */}
+        <div className="bg-slate-900 p-6 rounded-2xl">
+          <h2 className="text-2xl font-bold mb-4">Care Support Assignment</h2>
+
+          <div className="text-2xl font-bold text-green-400">
+            {support.level}
+          </div>
+
+          <p className="text-gray-300 mt-3">{support.description}</p>
+        </div>
+
+        {/* Vulnerability */}
+        <div className="bg-slate-900 p-6 rounded-2xl">
+          <h2 className="text-2xl font-bold mb-4">Vulnerability Assessment</h2>
+
+          <p className="text-yellow-300">{vulnerability}</p>
+        </div>
+      </div>
+
+      {/* Cognitive Exercises */}
+      <div className="bg-slate-900 p-6 rounded-2xl mt-8">
+        <h2 className="text-2xl font-bold mb-4">
+          Personalized Cognitive Exercises
+        </h2>
+
+        <ul className="space-y-3">
+          {exercises.map((exercise, index) => (
+            <li
+              key={index}
+              className="bg-slate-800 p-4 rounded-xl text-gray-300"
+            >
+              {exercise}
+            </li>
+          ))}
+        </ul>
+      </div>
       {/* Tabs navigation menu */}
       <div className="flex flex-wrap gap-2 border-b border-border pb-px">
         {[
           { id: "overview", label: "Assessment Overview", icon: Activity },
-          { id: "cognitive", label: "Cognitive Curves (Recharts)", icon: ClipboardList },
+          {
+            id: "cognitive",
+            label: "Cognitive Curves (Recharts)",
+            icon: ClipboardList,
+          },
           { id: "prescriptions", label: "Prescriptions Hub", icon: Pill },
           { id: "careplan", label: "Care Routine builder", icon: BookOpen },
           { id: "notes", label: "Clinical private notes", icon: Edit },
@@ -127,8 +264,8 @@ export default function DoctorPatientProfile() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`py-3 px-5 text-xs font-bold rounded-t-lg border-b-2 transition-all flex items-center gap-1.5 focus:outline-none ${
-                activeTab === tab.id 
-                  ? "border-accent text-accent bg-accent/5 font-extrabold" 
+                activeTab === tab.id
+                  ? "border-accent text-accent bg-accent/5 font-extrabold"
                   : "border-transparent text-text-secondary hover:text-text-primary"
               }`}
             >
@@ -141,7 +278,6 @@ export default function DoctorPatientProfile() {
 
       {/* TAB CONTENT SANDBOXES */}
       <div className="bg-white border border-border p-6 rounded-b-lg shadow-soft text-left">
-        
         {/* OVERVIEW TAB */}
         {activeTab === "overview" && (
           <div className="grid md:grid-cols-2 gap-8 animate-fade-in">
@@ -150,16 +286,28 @@ export default function DoctorPatientProfile() {
                 👨‍⚕️ Clinical Orientation Diagnosis
               </h3>
               <p className="text-xs text-text-secondary leading-relaxed">
-                Ramesh presents with early-stage Alzheimer's dementia, exhibiting mild spatial disorientation and slight short-term recall challenges. Visual visual aids, circular face boards, and basic memory games (like memory emoji matches) are highly recommended.
+                Ramesh presents with early-stage Alzheimer's dementia,
+                exhibiting mild spatial disorientation and slight short-term
+                recall challenges. Visual visual aids, circular face boards, and
+                basic memory games (like memory emoji matches) are highly
+                recommended.
               </p>
-              
+
               <div className="bg-bg border border-border p-4.5 rounded-xl space-y-2">
-                <p className="text-xs font-bold uppercase tracking-wider text-text-secondary">Assigned Care Circle</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                  Assigned Care Circle
+                </p>
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-secondary text-white font-bold rounded-full flex items-center justify-center">👩</div>
+                  <div className="h-10 w-10 bg-secondary text-white font-bold rounded-full flex items-center justify-center">
+                    👩
+                  </div>
                   <div className="text-left leading-tight">
-                    <p className="text-xs font-bold text-text-primary">Priya Sharma (Daughter / Caregiver)</p>
-                    <p className="text-[10px] text-text-secondary mt-0.5">Logged stress index: stable 4/10</p>
+                    <p className="text-xs font-bold text-text-primary">
+                      Priya Sharma (Daughter / Caregiver)
+                    </p>
+                    <p className="text-[10px] text-text-secondary mt-0.5">
+                      Logged stress index: stable 4/10
+                    </p>
                   </div>
                 </div>
               </div>
@@ -171,20 +319,36 @@ export default function DoctorPatientProfile() {
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-bg/60 p-3.5 rounded-xl border border-border">
-                  <span className="text-[10px] text-text-secondary uppercase">Systolic Target</span>
-                  <p className="text-sm font-bold text-text-primary mt-1">120/80 mmHg</p>
+                  <span className="text-[10px] text-text-secondary uppercase">
+                    Systolic Target
+                  </span>
+                  <p className="text-sm font-bold text-text-primary mt-1">
+                    120/80 mmHg
+                  </p>
                 </div>
                 <div className="bg-bg/60 p-3.5 rounded-xl border border-border">
-                  <span className="text-[10px] text-text-secondary uppercase">Oxygen Level</span>
-                  <p className="text-sm font-bold text-text-primary mt-1">98% SpO2</p>
+                  <span className="text-[10px] text-text-secondary uppercase">
+                    Oxygen Level
+                  </span>
+                  <p className="text-sm font-bold text-text-primary mt-1">
+                    98% SpO2
+                  </p>
                 </div>
                 <div className="bg-bg/60 p-3.5 rounded-xl border border-border">
-                  <span className="text-[10px] text-text-secondary uppercase">Latest Weight</span>
-                  <p className="text-sm font-bold text-text-primary mt-1">71.5 Kg</p>
+                  <span className="text-[10px] text-text-secondary uppercase">
+                    Latest Weight
+                  </span>
+                  <p className="text-sm font-bold text-text-primary mt-1">
+                    71.5 Kg
+                  </p>
                 </div>
                 <div className="bg-bg/60 p-3.5 rounded-xl border border-border">
-                  <span className="text-[10px] text-text-secondary uppercase">Hydration logs</span>
-                  <p className="text-sm font-bold text-text-primary mt-1">Stable (Mirrored)</p>
+                  <span className="text-[10px] text-text-secondary uppercase">
+                    Hydration logs
+                  </span>
+                  <p className="text-sm font-bold text-text-primary mt-1">
+                    Stable (Mirrored)
+                  </p>
                 </div>
               </div>
             </div>
@@ -204,28 +368,47 @@ export default function DoctorPatientProfile() {
             </div>
 
             <p className="text-xs text-text-secondary leading-relaxed">
-              Curved orientation scores showing Mini-Mental State Examination (MMSE) history. Scores below 24 alert cognitive decline risk.
+              Curved orientation scores showing Mini-Mental State Examination
+              (MMSE) history. Scores below 24 alert cognitive decline risk.
             </p>
 
             <div className="h-72 bg-bg p-4.5 rounded-xl border border-border shadow-inner">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={patient.mmseScores} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                <LineChart
+                  data={patient.mmseScores}
+                  margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                  <XAxis dataKey="date" stroke="#6B7280" fontSize={11} fontWeight={600} />
-                  <YAxis domain={[15, 30]} stroke="#6B7280" fontSize={11} fontWeight={600} />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#6B7280"
+                    fontSize={11}
+                    fontWeight={600}
+                  />
+                  <YAxis
+                    domain={[15, 30]}
+                    stroke="#6B7280"
+                    fontSize={11}
+                    fontWeight={600}
+                  />
                   <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="score" 
-                    stroke="#F4A259" 
-                    strokeWidth={3} 
-                    dot={{ r: 6, stroke: '#FFFFFF', strokeWidth: 2, fill: '#F4A259' }}
-                    activeDot={{ r: 8 }} 
+                  <Line
+                    type="monotone"
+                    dataKey="score"
+                    stroke="#F4A259"
+                    strokeWidth={3}
+                    dot={{
+                      r: 6,
+                      stroke: "#FFFFFF",
+                      strokeWidth: 2,
+                      fill: "#F4A259",
+                    }}
+                    activeDot={{ r: 8 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            
+
             <div className="overflow-x-auto pt-4">
               <table className="w-full text-xs text-left">
                 <thead>
@@ -239,16 +422,23 @@ export default function DoctorPatientProfile() {
                 <tbody className="divide-y divide-border">
                   {patient.mmseScores.map((score, i) => (
                     <tr key={i} className="hover:bg-bg/20">
-                      <td className="py-2.5 px-4 font-bold text-text-primary">{score.date}</td>
-                      <td className="py-2.5 px-4 font-medium text-text-secondary">Standard MMSE assessment</td>
-                      <td className="py-2.5 px-4 text-center font-extrabold text-accent">{score.score} / 30</td>
-                      <td className="py-2.5 px-4 font-semibold text-text-primary">Dr. Ananya Mehta</td>
+                      <td className="py-2.5 px-4 font-bold text-text-primary">
+                        {score.date}
+                      </td>
+                      <td className="py-2.5 px-4 font-medium text-text-secondary">
+                        Standard MMSE assessment
+                      </td>
+                      <td className="py-2.5 px-4 text-center font-extrabold text-accent">
+                        {score.score} / 30
+                      </td>
+                      <td className="py-2.5 px-4 font-semibold text-text-primary">
+                        Dr. Ananya Mehta
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-
           </div>
         )}
 
@@ -269,26 +459,33 @@ export default function DoctorPatientProfile() {
 
             <div className="grid md:grid-cols-2 gap-4">
               {db.medicines.map((med) => (
-                <div 
+                <div
                   key={med.id}
                   className="bg-bg border border-border p-4.5 rounded-xl text-left flex justify-between items-center"
                 >
                   <div className="space-y-1">
-                    <h4 className="font-extrabold text-text-primary text-[15px]">{med.name}</h4>
-                    <p className="text-xs text-text-secondary font-medium">Dosage: {med.dosage} ({med.frequency})</p>
-                    <p className="text-[10px] text-accent uppercase font-bold tracking-wider">{med.period} dose • {med.time}</p>
+                    <h4 className="font-extrabold text-text-primary text-[15px]">
+                      {med.name}
+                    </h4>
+                    <p className="text-xs text-text-secondary font-medium">
+                      Dosage: {med.dosage} ({med.frequency})
+                    </p>
+                    <p className="text-[10px] text-accent uppercase font-bold tracking-wider">
+                      {med.period} dose • {med.time}
+                    </p>
                   </div>
-                  <span className={`text-[10px] font-bold py-1 px-3 border rounded-full ${
-                    med.takenToday 
-                      ? "bg-green-50 border-green-200 text-green-700" 
-                      : "bg-amber-50 border-amber-200 text-amber-800"
-                  }`}>
+                  <span
+                    className={`text-[10px] font-bold py-1 px-3 border rounded-full ${
+                      med.takenToday
+                        ? "bg-green-50 border-green-200 text-green-700"
+                        : "bg-amber-50 border-amber-200 text-amber-800"
+                    }`}
+                  >
                     {med.takenToday ? "✓ Logged Taken" : "• Awaiting Take"}
                   </span>
                 </div>
               ))}
             </div>
-
           </div>
         )}
 
@@ -305,12 +502,18 @@ export default function DoctorPatientProfile() {
             </div>
 
             <p className="text-xs text-text-secondary leading-relaxed">
-              Add custom routines directly to Priya's caregiver checklists (e.g. morning stretches, visual orientation reviews).
+              Add custom routines directly to Priya's caregiver checklists (e.g.
+              morning stretches, visual orientation reviews).
             </p>
 
-            <form onSubmit={handleAddRoutineSubmit} className="bg-bg border border-border p-4.5 rounded-xl flex flex-wrap gap-4 items-end">
+            <form
+              onSubmit={handleAddRoutineSubmit}
+              className="bg-bg border border-border p-4.5 rounded-xl flex flex-wrap gap-4 items-end"
+            >
               <div className="flex-1 min-w-[200px] space-y-1.5 text-left">
-                <label className="text-[10px] uppercase font-bold text-text-secondary">Target Routine category</label>
+                <label className="text-[10px] uppercase font-bold text-text-secondary">
+                  Target Routine category
+                </label>
                 <select
                   value={newRoutineSection}
                   onChange={(e) => setNewRoutineSection(e.target.value)}
@@ -325,7 +528,9 @@ export default function DoctorPatientProfile() {
               </div>
 
               <div className="flex-[2] min-w-[260px] space-y-1.5 text-left">
-                <label className="text-[10px] uppercase font-bold text-text-secondary">Instructions / Task Description</label>
+                <label className="text-[10px] uppercase font-bold text-text-secondary">
+                  Instructions / Task Description
+                </label>
                 <input
                   type="text"
                   required
@@ -346,9 +551,14 @@ export default function DoctorPatientProfile() {
 
             {/* Read-only listing of active routines */}
             <div className="space-y-3.5 mt-6">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-text-secondary">Active Routines</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                Active Routines
+              </h4>
               {Object.keys(db.carePlan.sections).map((sectionName) => (
-                <div key={sectionName} className="p-3 border border-border rounded-lg text-xs leading-relaxed text-left bg-bg/30">
+                <div
+                  key={sectionName}
+                  className="p-3 border border-border rounded-lg text-xs leading-relaxed text-left bg-bg/30"
+                >
                   <p className="font-bold text-text-primary">{sectionName}</p>
                   <ul className="list-disc list-inside mt-1.5 text-text-secondary space-y-1 pl-1.5">
                     {db.carePlan.sections[sectionName].map((task) => (
@@ -358,7 +568,6 @@ export default function DoctorPatientProfile() {
                 </div>
               ))}
             </div>
-
           </div>
         )}
 
@@ -373,7 +582,8 @@ export default function DoctorPatientProfile() {
 
             {notesSuccess && (
               <div className="p-3 bg-green-50 border border-green-200 text-green-700 text-xs font-semibold rounded-lg flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5" /> Assessment entry saved successfully to health records.
+                <Check className="h-3.5 w-3.5" /> Assessment entry saved
+                successfully to health records.
               </div>
             )}
 
@@ -397,10 +607,15 @@ export default function DoctorPatientProfile() {
 
             {/* Past Notes Logs */}
             <div className="space-y-3.5 mt-6 border-t border-border/60 pt-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-text-secondary">Past Assessments History</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                Past Assessments History
+              </h4>
               <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
                 {patient.privateNotes.map((note) => (
-                  <div key={note.id} className="p-3.5 bg-bg/50 border border-border rounded-lg text-left text-xs leading-relaxed">
+                  <div
+                    key={note.id}
+                    className="p-3.5 bg-bg/50 border border-border rounded-lg text-left text-xs leading-relaxed"
+                  >
                     <div className="flex justify-between items-center font-bold text-text-primary border-b border-border/40 pb-2 mb-2">
                       <span>Clinical assessment note</span>
                       <span className="text-text-secondary">{note.date}</span>
@@ -410,10 +625,8 @@ export default function DoctorPatientProfile() {
                 ))}
               </div>
             </div>
-
           </div>
         )}
-
       </div>
 
       {/* Add Prescription Modal Overlay Dialog */}
@@ -422,9 +635,10 @@ export default function DoctorPatientProfile() {
           <div className="bg-white border border-border p-6 rounded-lg max-w-md w-full shadow-2xl space-y-5">
             <div className="flex justify-between items-center border-b border-border pb-3.5">
               <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                <Pill className="text-accent h-5 w-5" /> Prescribe New Medication
+                <Pill className="text-accent h-5 w-5" /> Prescribe New
+                Medication
               </h3>
-              <button 
+              <button
                 onClick={() => setShowPrescriptionModal(false)}
                 className="p-1 rounded-full bg-bg hover:bg-border transition-colors"
               >
@@ -434,7 +648,9 @@ export default function DoctorPatientProfile() {
 
             <form onSubmit={handleAddPrescriptionSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-text-primary">Chemical Name / Pill Brand</label>
+                <label className="text-xs font-semibold text-text-primary">
+                  Chemical Name / Pill Brand
+                </label>
                 <input
                   type="text"
                   required
@@ -447,7 +663,9 @@ export default function DoctorPatientProfile() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-text-primary">Dosage parameters</label>
+                  <label className="text-xs font-semibold text-text-primary">
+                    Dosage parameters
+                  </label>
                   <input
                     type="text"
                     required
@@ -458,13 +676,17 @@ export default function DoctorPatientProfile() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-text-primary">Intake period</label>
+                  <label className="text-xs font-semibold text-text-primary">
+                    Intake period
+                  </label>
                   <select
                     value={newMedPeriod}
                     onChange={(e) => {
                       setNewMedPeriod(e.target.value);
-                      if (e.target.value === "morning") setNewMedTime("08:00 AM");
-                      else if (e.target.value === "afternoon") setNewMedTime("01:00 PM");
+                      if (e.target.value === "morning")
+                        setNewMedTime("08:00 AM");
+                      else if (e.target.value === "afternoon")
+                        setNewMedTime("01:00 PM");
                       else setNewMedTime("09:00 PM");
                     }}
                     className="w-full px-3 py-2.5 bg-bg border border-border focus:border-accent rounded-md outline-none text-xs"
@@ -478,7 +700,9 @@ export default function DoctorPatientProfile() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-text-primary">Clinical Frequency</label>
+                  <label className="text-xs font-semibold text-text-primary">
+                    Clinical Frequency
+                  </label>
                   <select
                     value={newMedFreq}
                     onChange={(e) => setNewMedFreq(e.target.value)}
@@ -490,7 +714,9 @@ export default function DoctorPatientProfile() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-text-primary">Exact Schedule time</label>
+                  <label className="text-xs font-semibold text-text-primary">
+                    Exact Schedule time
+                  </label>
                   <input
                     type="text"
                     value={newMedTime}
@@ -510,7 +736,6 @@ export default function DoctorPatientProfile() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

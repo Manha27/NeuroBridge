@@ -10,7 +10,7 @@ export default function PatientJournal() {
   
   // States
   const [text, setText] = useState("");
-  const [mood, setMood] = useState("😊");
+  const [mood, setMood] = useState("Great");
   const [photo, setPhoto] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,7 +28,7 @@ export default function PatientJournal() {
     
     // Clear inputs
     setText("");
-    setMood("😊");
+    setMood("Great");
     setPhoto(null);
     setAudioUrl(null);
     setMediaSelected("");
@@ -108,17 +108,25 @@ export default function PatientJournal() {
             <div className="flex flex-wrap items-center gap-4">
               
               {/* Emojis selection */}
-              <div className="flex items-center gap-1 bg-bg p-1 border border-border rounded-full">
-                {["😔", "😕", "😐", "🙂", "😊"].map((emo) => (
+              <div className="flex items-center gap-1 bg-bg p-1 border border-border rounded-lg">
+                {[
+                  { value: "Sad", label: "Sad", color: "text-red-700 hover:bg-red-50" },
+                  { value: "Confused", label: "Confused", color: "text-amber-700 hover:bg-amber-50" },
+                  { value: "Okay", label: "Okay", color: "text-blue-700 hover:bg-blue-50" },
+                  { value: "Good", label: "Good", color: "text-green-700 hover:bg-green-50" },
+                  { value: "Great", label: "Great", color: "text-emerald-800 hover:bg-emerald-50" }
+                ].map((m) => (
                   <button
-                    key={emo}
+                    key={m.value}
                     type="button"
-                    onClick={() => setMood(emo)}
-                    className={`text-xl p-1.5 rounded-full transition-transform active:scale-90 ${
-                      mood === emo ? "bg-white shadow-sm scale-115" : "hover:scale-105"
+                    onClick={() => setMood(m.value)}
+                    className={`text-xs px-2.5 py-1.5 font-bold rounded-md transition-all cursor-pointer ${
+                      mood === m.value
+                        ? "bg-white text-text-primary shadow-xs border border-border"
+                        : `text-text-secondary hover:text-text-primary ${m.color}`
                     }`}
                   >
-                    {emo}
+                    {m.label}
                   </button>
                 ))}
               </div>
@@ -198,7 +206,19 @@ export default function PatientJournal() {
                 {/* Header */}
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-3xl p-1 bg-bg rounded-full shadow-inner">{entry.mood}</span>
+                    <span className={`inline-block px-3 py-1 text-xs font-black rounded-full border shadow-sm ${
+                      entry.mood === "Great"
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                        : entry.mood === "Good"
+                        ? "bg-green-50 text-green-700 border-green-200"
+                        : entry.mood === "Okay"
+                        ? "bg-blue-50 text-blue-700 border-blue-200"
+                        : entry.mood === "Confused"
+                        ? "bg-amber-50 text-amber-700 border-amber-200"
+                        : "bg-red-50 text-red-700 border-red-200"
+                    }`}>
+                      Mood: {entry.mood}
+                    </span>
                     <div>
                       <p className="text-sm font-bold text-text-primary flex items-center gap-1.5">
                         <Calendar className="h-4 w-4 text-primary" />

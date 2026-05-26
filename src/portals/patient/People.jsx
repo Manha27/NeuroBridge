@@ -36,13 +36,93 @@ export default function PatientPeople() {
 
   const handlePlayVoice = (person, e) => {
     e.stopPropagation(); // Avoid flipping
-    // Play voice simulation (we will alert or use standard text speech synthesis)
+    
     if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(person.audioText);
-      utterance.pitch = 1.0;
-      utterance.rate = 0.9; // speak slowly for dementia patients
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
+      window.speechSynthesis.cancel(); // Cancel any ongoing speech first
+      
+      const playUtterance = () => {
+        const utterance = new SpeechSynthesisUtterance(person.audioText);
+        const voices = window.speechSynthesis.getVoices();
+        
+        // Play voice simulation with female voice for Priya, Kavitha, and Dr. Ananya
+        const isFemale = person.voiceGender === "female" || 
+                         ["daughter", "wife"].includes(person.relationship?.toLowerCase()) ||
+                         person.name?.toLowerCase().includes("ananya") ||
+                         person.name?.toLowerCase().includes("priya") ||
+                         person.name?.toLowerCase().includes("kavita") ||
+                         person.name?.toLowerCase().includes("kavitha");
+        
+        let selectedVoice = null;
+        if (isFemale) {
+          // Priority list for female voices
+          selectedVoice = voices.find(v => {
+            const vName = v.name.toLowerCase();
+            return vName.includes("female") || vName.includes("woman") ||
+                   vName.includes("zira") || vName.includes("samantha") ||
+                   vName.includes("victoria") || vName.includes("karen") ||
+                   vName.includes("moira") || vName.includes("hazel") ||
+                   vName.includes("susan") || vName.includes("google uk english female") ||
+                   vName.includes("en-us-x-sfg") || vName.includes("en-in-x-ene") || 
+                   vName.includes("en-in") || vName.includes("india") || vName.includes("heera");
+          });
+          
+          // Fallback 1: any voice with "female" or "woman"
+          if (!selectedVoice) {
+            selectedVoice = voices.find(v => v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("woman"));
+          }
+          
+          // Fallback 2: any voice that does not contain "male", "man", "david", or "mark"
+          if (!selectedVoice) {
+            selectedVoice = voices.find(v => {
+              const vName = v.name.toLowerCase();
+              return !vName.includes("male") && !vName.includes("man") && !vName.includes("david") && !vName.includes("mark");
+            });
+          }
+        } else {
+          // Select male voice
+          selectedVoice = voices.find(v => {
+            const vName = v.name.toLowerCase();
+            return vName.includes("male") || vName.includes("man") ||
+                   vName.includes("david") || vName.includes("mark") ||
+                   vName.includes("google uk english male") ||
+                   vName.includes("en-us-x-iom") || vName.includes("en-in-x-iog");
+          });
+        }
+        
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+        }
+        
+        // Set voice characteristics
+        const characteristic = person.voiceCharacteristic || (isFemale ? "warm" : "friendly");
+        if (characteristic === "calm") {
+          utterance.pitch = 1.1;
+          utterance.rate = 0.75;
+        } else if (characteristic === "professional") {
+          utterance.pitch = 1.0;
+          utterance.rate = 0.85;
+        } else if (characteristic === "warm") {
+          utterance.pitch = isFemale ? 1.25 : 0.9;
+          utterance.rate = 0.80;
+        } else if (characteristic === "friendly") {
+          utterance.pitch = 1.0;
+          utterance.rate = 0.90;
+        } else {
+          utterance.pitch = 1.0;
+          utterance.rate = 0.9;
+        }
+        
+        utterance.volume = 1.0;
+        window.speechSynthesis.speak(utterance);
+      };
+
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          playUtterance();
+        };
+      } else {
+        playUtterance();
+      }
     } else {
       alert(`Playing voice memo: "${person.audioText}"`);
     }

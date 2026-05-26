@@ -1,63 +1,54 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { ShieldAlert, Phone, MapPin, X } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 
 export default function PatientSos() {
   const { db, triggerSOS, cancelSOS, sosActive, sosData } = useApp();
 
-  const [isPressing, setIsPressing] = useState(false);
-  const [progress, setProgress] = useState(0);
-
-  const holdTimerRef = useRef(null);
-  const progressIntervalRef = useRef(null);
   const [callTarget, setCallTarget] = useState(null);
 
-  // ── Hold mechanic ─────────────────────────────────────────────────────────
-  const startPress = (e) => {
+  // ── Play beep sound ───────────────────────────────────────────────────────
+  const playBeep = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create three quick beeps for emergency alert
+      const now = audioContext.currentTime;
+      for (let i = 0; i < 3; i++) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800; // High frequency for attention
+        oscillator.type = "sine";
+        
+        gainNode.gain.setValueAtTime(0.3, now + i * 0.2);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.15);
+        
+        oscillator.start(now + i * 0.2);
+        oscillator.stop(now + i * 0.2 + 0.15);
+      }
+    } catch (error) {
+      console.log("Beep sound not available, falling back to alert");
+      // Fallback: use system alert
+      alert("🚨 SOS Alert Activated!");
+    }
+  };
+
+  // ── Handle single-click SOS activation ────────────────────────────────────
+  const handleSOS = (e) => {
     e.preventDefault();
     if (sosActive) return;
-    setIsPressing(true);
-    setProgress(0);
-
-    // Increment ring every 30ms → 100 steps over 3 000ms
-    progressIntervalRef.current = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + 100 / 100; // 1% per tick, 100 ticks = 3s
-        if (next >= 100) {
-          clearInterval(progressIntervalRef.current);
-          return 100;
-        }
-        return next;
-      });
-    }, 30);
-
-    // Fire after exactly 3 seconds
-    holdTimerRef.current = setTimeout(() => {
-      setIsPressing(false);
-      triggerSOS();
-    }, 3000);
+    
+    // Play beep sound immediately
+    playBeep();
+    
+    // Trigger SOS alert
+    triggerSOS();
   };
-
-  const endPress = (e) => {
-    e?.preventDefault();
-    if (sosActive) return;
-    // Released early — reset everything
-    clearTimeout(holdTimerRef.current);
-    clearInterval(progressIntervalRef.current);
-    setIsPressing(false);
-    setProgress(0);
-  };
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      clearTimeout(holdTimerRef.current);
-      clearInterval(progressIntervalRef.current);
-    };
-  }, []);
   // ─────────────────────────────────────────────────────────────────────────
-
-  const circumference = 2 * Math.PI * 96; // r=96 → 603.2
 
   const emergencyPeople = db.people.filter(
     (p) => p.relationship === "Daughter" || p.relationship === "Wife" || p.relationship === "Doctor"
@@ -70,7 +61,7 @@ export default function PatientSos() {
   const allContacts = [...emergencyPeople, ...fixedContacts];
 
   return (
-    <div className="space-y-8 text-left font-sans select-none max-w-2xl mx-auto">
+    <div className="space-y-8 text-left font-sans px-4 sm:px-6 max-w-2xl mx-auto" style={{ touchAction: "manipulation" }}>
 
       {/* Header */}
       <section className="bg-white border border-border p-6 rounded-lg shadow-soft text-center space-y-2">
@@ -79,16 +70,16 @@ export default function PatientSos() {
           Emergency SOS Center
         </h2>
         <p className="text-sm text-text-secondary">
-          Need immediate assistance? Press and hold the button for 3 seconds to alert your care circle.
+          Need immediate assistance? Tap the button once to alert your care circle with an emergency signal and beep sound.
         </p>
       </section>
 
       {/* Main SOS area */}
-      <section className="bg-white border border-border p-8 rounded-lg shadow-soft flex flex-col justify-center items-center text-center space-y-6">
+      <section className="bg-white border border-border p-8 rounded-lg shadow-soft flex flex-col justify-center items-center text-center space-y-6 pointer-events-auto">
 
         {sosActive ? (
           /* ── ALERT SENT STATE ─────────────────────────────────────────── */
-          <div className="space-y-6 py-6 flex flex-col items-center">
+          <div className="space-y-6 py-6 flex flex-col items-center w-full">
             <div className="relative">
               <div className="h-32 w-32 bg-danger rounded-full flex items-center justify-center mx-auto shadow-lg animate-sos">
                 <ShieldAlert className="h-16 w-16 text-white" />
@@ -101,7 +92,7 @@ export default function PatientSos() {
                 Priya and Dr. Ananya have been alerted.
               </p>
               {sosData && (
-                <div className="bg-danger/5 border border-danger/20 rounded-lg px-4 py-3 space-y-1 text-sm">
+                <div className="bg-danger/5 border border-danger/20 rounded-lg px-4 py-3 space-y-1 text-sm w-full">
                   <p className="text-danger font-semibold flex items-center justify-center gap-1.5">
                     <MapPin className="h-4 w-4" />
                     {sosData.location.address}
@@ -123,61 +114,29 @@ export default function PatientSos() {
           </div>
 
         ) : (
-          /* ── HOLD TO ACTIVATE STATE ───────────────────────────────────── */
-          <div className="space-y-6 flex flex-col items-center">
+          /* ── SINGLE CLICK TO ACTIVATE STATE ───────────────────────────── */
+          <div className="space-y-6 flex flex-col items-center w-full">
 
-            {/* Circular progress ring */}
-            <div className="relative h-56 w-56 flex items-center justify-center">
-              <svg
-                className="absolute inset-0 w-full h-full"
-                viewBox="0 0 224 224"
-                style={{ transform: "rotate(-90deg)" }}
-              >
-                {/* Track */}
-                <circle cx="112" cy="112" r="96" stroke="#E5E7EB" strokeWidth="8" fill="transparent" />
-                {/* Progress arc */}
-                <circle
-                  cx="112"
-                  cy="112"
-                  r="96"
-                  stroke="#E05252"
-                  strokeWidth="8"
-                  fill="transparent"
-                  strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={circumference - (circumference * progress) / 100}
-                  style={{ transition: "stroke-dashoffset 30ms linear" }}
-                />
-              </svg>
+            {/* The big red button - Single click to activate */}
+            <button
+              onClick={handleSOS}
+              type="button"
+              className="h-56 w-56 rounded-full flex flex-col items-center justify-center text-white font-black text-4xl shadow-2xl border-4 border-white transition-all duration-150 bg-danger hover:scale-110 hover:shadow-danger/50 active:scale-95 animate-sos"
+              aria-label="SOS emergency button — tap once to activate"
+            >
+              <ShieldAlert className="h-20 w-20 mb-3" />
+              <span className="text-5xl font-black">SOS</span>
+              <span className="text-sm uppercase tracking-widest font-bold mt-3 opacity-95">
+                Tap Once
+              </span>
+            </button>
 
-              {/* The big red button */}
-              <button
-                onMouseDown={startPress}
-                onMouseUp={endPress}
-                onMouseLeave={endPress}
-                onTouchStart={startPress}
-                onTouchEnd={endPress}
-                onContextMenu={(e) => e.preventDefault()}
-                className={`h-40 w-40 rounded-full flex flex-col items-center justify-center text-white font-black text-2xl shadow-xl border-4 border-white transition-all duration-150 ${isPressing
-                    ? "bg-red-700 scale-95"
-                    : "bg-danger hover:scale-105 animate-sos"
-                  }`}
-                aria-label="SOS emergency button — press and hold 3 seconds to activate"
-              >
-                <ShieldAlert className="h-10 w-10 mb-1" />
-                <span className="text-lg font-black">SOS</span>
-                <span className="text-[9px] uppercase tracking-widest font-semibold mt-0.5 opacity-90">
-                  {isPressing ? `${Math.round(progress)}%` : "Hold 3s"}
-                </span>
-              </button>
-            </div>
-
-            <div className="space-y-1">
+            <div className="space-y-1 w-full text-center">
               <p className="font-extrabold text-[19px] text-text-primary">
-                {isPressing ? "Keep holding..." : "Press and hold for 3 seconds"}
+                Tap Button to Send Alert
               </p>
               <p className="text-xs text-text-secondary">
-                Releasing early cancels the alert. Your GPS location is shared automatically.
+                Beep sound will play. Your GPS location is shared automatically. Caregiver receives voice notification.
               </p>
             </div>
           </div>

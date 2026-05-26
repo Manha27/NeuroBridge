@@ -188,17 +188,27 @@ export default function CaregiverDashboard() {
           <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 relative">
             <div className="absolute left-[16px] top-3 bottom-3 w-0.5 bg-border -z-10" />
 
-            {db.notifications.map((item) => (
-              <div key={item.id} className="flex gap-4 items-start text-xs">
-                <div className={`h-8 w-8 rounded-full shrink-0 flex items-center justify-center text-white font-bold bg-bg border border-border`}>
-                  {item.type === "pill" ? "💊" : item.type === "location" ? "📍" : item.type === "message" ? "💬" : "📅"}
+            {db.notifications.map((item) => {
+              const IconComponent = item.type === "pill"
+                ? Pill
+                : item.type === "location"
+                ? MapPin
+                : item.type === "message"
+                ? MessageSquare
+                : Calendar;
+
+              return (
+                <div key={item.id} className="flex gap-4 items-start text-xs">
+                  <div className="h-8 w-8 rounded-full shrink-0 flex items-center justify-center bg-bg border border-border text-text-secondary">
+                    <IconComponent className="h-4 w-4" />
+                  </div>
+                  <div className="text-left flex-1 min-w-0">
+                    <p className={`font-semibold text-text-primary ${item.read ? "text-text-secondary" : ""}`}>{item.message}</p>
+                    <p className="text-[10px] text-text-secondary mt-0.5">{item.time}</p>
+                  </div>
                 </div>
-                <div className="text-left flex-1 min-w-0">
-                  <p className={`font-semibold text-text-primary ${item.read ? "text-text-secondary" : ""}`}>{item.message}</p>
-                  <p className="text-[10px] text-text-secondary mt-0.5">{item.time}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

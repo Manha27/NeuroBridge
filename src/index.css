@@ -34,6 +34,32 @@
   }
 }
 
+/* Prevent iOS text auto-size and ensure base sizing for mobile */
+html { 
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  font-size: 16px; /* base font-size to avoid iOS zoom on inputs */
+}
+
+/* Ensure form controls don't trigger zoom on focus (iOS) */
+input, button, select, textarea, label {
+  font-size: 16px;
+}
+
+/* Safe area insets for iPhone X/Notch devices */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  /* Legacy iOS support */
+  padding-top: constant(safe-area-inset-top);
+  padding-right: constant(safe-area-inset-right);
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-left: constant(safe-area-inset-left);
+}
+
 /* Custom Pulsing SOS button animation */
 @keyframes sos-pulse {
   0% {

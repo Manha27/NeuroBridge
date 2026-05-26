@@ -134,7 +134,7 @@ export default function DoctorDashboard() {
                       <td className="py-4 px-4 font-semibold text-text-secondary">{pat.age} yrs</td>
                       <td className="py-4 px-4 font-semibold text-text-primary">{pat.stage}</td>
                       <td className="py-4 px-4 font-extrabold text-accent">{latestScore} / 30</td>
-                      <td className="py-4 px-4 text-sm font-semibold">{latestMood} {pat.moodHistory.slice(-3).map((m,i)=>m.mood)}</td>
+                      <td className="py-4 px-4 text-sm font-semibold">{pat.moodHistory.slice(-3).map(m => m.mood).join(" → ")}</td>
                       <td className="py-4 px-4 text-center">
                         <span className={`inline-block px-3 py-1 text-[9.5px] rounded-full font-bold uppercase tracking-wider ${
                           statusLabel === "Alert" 
@@ -168,8 +168,8 @@ export default function DoctorDashboard() {
 
               {db.appointments.map((app) => (
                 <div key={app.id} className="flex gap-3.5 items-start text-xs text-left">
-                  <div className="h-8.5 w-8.5 rounded-full shrink-0 flex items-center justify-center text-white bg-accent font-bold border border-white shadow-sm">
-                    🩺
+                  <div className="h-8.5 w-8.5 rounded-full shrink-0 flex items-center justify-center text-white bg-accent border border-white shadow-sm">
+                    <Activity className="h-4 w-4" />
                   </div>
                   <div className="flex-1 min-w-0 leading-tight">
                     <p className="font-bold text-text-primary truncate">{app.specialty}</p>

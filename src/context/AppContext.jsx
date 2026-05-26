@@ -3,12 +3,94 @@ import { INITIAL_DATA } from "../data/initialData";
 
 const AppContext = createContext();
 
+const getStoredUsers = () => {
+  const stored = localStorage.getItem("nb_users");
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  const demoUsers = [
+    {
+      id: "patient-1",
+      patient_id: "patient-1",
+      email: "patient@demo.com",
+      password: "demo123",
+      role: "patient",
+      name: "Ramesh Sharma",
+      phone: "+91 98765 43210",
+      age: 68,
+      emergencyContactName: "Priya Sharma",
+      emergencyContactPhone: "+91 98765 43210",
+      initialMmse: 25,
+      initialCdr: "1",
+      diagnosisDate: "2025-10-15"
+    },
+    {
+      id: "caregiver-1",
+      email: "caregiver@demo.com",
+      password: "demo123",
+      role: "caregiver",
+      name: "Priya Sharma",
+      phone: "+91 98765 43210",
+      relationship: "Daughter",
+      patient_ids: ["patient-1"]
+    },
+    {
+      id: "doctor-1",
+      email: "doctor@demo.com",
+      password: "demo123",
+      role: "doctor",
+      name: "Dr. Ananya Mehta",
+      phone: "+91 11234 5678",
+      specialization: "Neurologist",
+      hospital: "AIIMS Delhi",
+      licenseNumber: "LIC-12345",
+      patient_ids: ["patient-1"]
+    }
+  ];
+  localStorage.setItem("nb_users", JSON.stringify(demoUsers));
+  return demoUsers;
+};
+
+const cdrToStage = (cdr) => {
+  switch (cdr) {
+    case "0": return "Normal Cognitive Function";
+    case "0.5": return "Very Mild Cognitive Decline";
+    case "1": return "Early-stage Alzheimer's";
+    case "2": return "Moderate Alzheimer's / Dementia";
+    case "3": return "Severe Cognitive Decline";
+    default: return "Early-stage Dementia";
+  }
+};
+
 export const AppProvider = ({ children }) => {
   const [db, setDb] = useState(() => {
     const local = localStorage.getItem("neurobridge_db");
     if (local) {
       try {
-        return JSON.parse(local);
+        const parsed = JSON.parse(local);
+        // Migrate Kavita Sharma -> Kavitha Sharma with the new photo avatar
+        let migrated = false;
+        if (parsed.people) {
+          parsed.people = parsed.people.map((person) => {
+            if (person.name === "Kavita Sharma") {
+              person.name = "Kavitha Sharma";
+              person.avatar = "/kavitha_sharma.png";
+              if (person.audioText) {
+                person.audioText = person.audioText.replace(/Kavita/g, "Kavitha");
+              }
+              migrated = true;
+            }
+            return person;
+          });
+        }
+        if (migrated) {
+          localStorage.setItem("neurobridge_db", JSON.stringify(parsed));
+        }
+        return parsed;
       } catch (e) {
         console.error("Failed to parse local storage", e);
       }
@@ -18,13 +100,23 @@ export const AppProvider = ({ children }) => {
   });
 
   const [currentUser, setCurrentUser] = useState(() => {
-    const user = localStorage.getItem("neurobridge_current_user");
+    const user = sessionStorage.getItem("neurobridge_current_user");
     return user ? JSON.parse(user) : null;
   });
 
   // ── SOS global state ──────────────────────────────────────────────────────
-  const [sosActive, setSosActive] = useState(false);
-  const [sosData, setSosData] = useState(null);
+  const [sosActive, setSosActive] = useState(() => {
+    return localStorage.getItem("neurobridge_sos_active") === "true";
+  });
+  const [sosData, setSosData] = useState(() => {
+    const data = localStorage.getItem("neurobridge_sos_data");
+    return data ? JSON.parse(data) : null;
+  });
+  // ── Active Reminders state ────────────────────────────────────────────────
+  const [activeReminder, setActiveReminder] = useState(() => {
+    const rem = localStorage.getItem("neurobridge_active_reminder");
+    return rem ? JSON.parse(rem) : null;
+  });
   // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -33,54 +125,185 @@ export const AppProvider = ({ children }) => {
 
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem("neurobridge_current_user", JSON.stringify(currentUser));
+      sessionStorage.setItem("neurobridge_current_user", JSON.stringify(currentUser));
     } else {
-      localStorage.removeItem("neurobridge_current_user");
+      sessionStorage.removeItem("neurobridge_current_user");
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    localStorage.setItem("neurobridge_sos_active", sosActive);
+    if (sosActive) {
+      localStorage.setItem("neurobridge_sos_data", JSON.stringify(sosData));
+    } else {
+      localStorage.removeItem("neurobridge_sos_data");
+    }
+  }, [sosActive, sosData]);
+
+  useEffect(() => {
+    if (activeReminder) {
+      localStorage.setItem("neurobridge_active_reminder", JSON.stringify(activeReminder));
+    } else {
+      localStorage.removeItem("neurobridge_active_reminder");
+    }
+  }, [activeReminder]);
+
+  // Sync state across tabs instantly
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "neurobridge_db") {
+        try {
+          if (e.newValue) setDb(JSON.parse(e.newValue));
+        } catch (err) {
+          console.error("Failed to sync database across tabs", err);
+        }
+      } else if (e.key === "neurobridge_sos_active") {
+        setSosActive(e.newValue === "true");
+      } else if (e.key === "neurobridge_sos_data") {
+        try {
+          setSosData(e.newValue ? JSON.parse(e.newValue) : null);
+        } catch (err) {
+          console.error("Failed to sync SOS data across tabs", err);
+        }
+      } else if (e.key === "neurobridge_active_reminder") {
+        try {
+          setActiveReminder(e.newValue ? JSON.parse(e.newValue) : null);
+        } catch (err) {
+          console.error("Failed to sync active reminder across tabs", err);
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   // Auth
   const loginUser = (email, password) => {
     const formattedEmail = email.toLowerCase().trim();
-    const user = db.users[formattedEmail];
-    if (user && user.password === password) {
+    const users = getStoredUsers();
+    
+    // Find user in nb_users array
+    const user = users.find(u => u.email.toLowerCase().trim() === formattedEmail && u.password === password);
+    if (user) {
       setCurrentUser(user);
       return { success: true, role: user.role };
     }
+    
+    // Fallback for demo users dictionary
+    const fallbackUser = db.users[formattedEmail] || INITIAL_DATA.users[formattedEmail];
+    if (fallbackUser && fallbackUser.password === password) {
+      setCurrentUser(fallbackUser);
+      return { success: true, role: fallbackUser.role };
+    }
+    
     return { success: false, message: "Invalid email or password" };
   };
 
-  const signupUser = (fullName, email, password, role, extraFields = {}) => {
-    const formattedEmail = email.toLowerCase().trim();
-    if (db.users[formattedEmail]) {
-      return { success: false, message: "Email already registered" };
+  const verifyPatientId = (patientId) => {
+    const users = getStoredUsers();
+    const patientUser = users.find(
+      (u) =>
+        u.role === "patient" &&
+        (u.patient_id === patientId || u.id === patientId)
+    );
+    if (patientUser) return patientUser;
+    
+    // Also support fallback lookup inside pre-seeded db.patients list
+    const patientRecord = db.patients.find(p => p.id === patientId);
+    if (patientRecord) {
+      return {
+        id: patientRecord.id,
+        patient_id: patientRecord.id,
+        name: patientRecord.name,
+        age: patientRecord.age,
+        role: "patient",
+        initialMmse: patientRecord.mmseScores?.[0]?.score || 25,
+        initialCdr: "1" // default fallback
+      };
     }
-    const newId = `${role}-${Date.now()}`;
-    const newUser = { email: formattedEmail, password, role, name: fullName, id: newId };
-    const updatedDb = { ...db };
-    updatedDb.users[formattedEmail] = newUser;
-    if (role === "patient") {
-      updatedDb.patients.push({
-        id: newId,
-        name: fullName,
-        age: parseInt(extraFields.age) || 65,
-        gender: extraFields.gender || "Male",
-        stage: extraFields.stage || "Early-stage dementia",
-        sinceDate: "May 2026",
-        photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200",
-        caregiver: { id: "caregiver-1", name: "Priya Sharma", relationship: "Primary Caregiver", phone: "+91 98765 43210" },
-        doctor: { id: "doctor-1", name: "Dr. Ananya Mehta", specialty: "Neurologist", hospital: "AIIMS Delhi", phone: "+91 11234 5678" },
-        vitals: { heartRate: 72, bloodPressure: "120/80", weight: "70 kg", oxygenSaturation: "99%" },
-        moodHistory: [{ date: new Date().toISOString().split("T")[0], mood: "Good" }],
-        mmseScores: [{ month: "May", score: 26 }]
-      });
-    }
-    setDb(updatedDb);
-    setCurrentUser(newUser);
-    return { success: true, role };
+    return null;
   };
 
-  const logoutUser = () => setCurrentUser(null);
+  const signupUser = (userObj) => {
+    const users = getStoredUsers();
+    const formattedEmail = userObj.email.toLowerCase().trim();
+    
+    if (users.some(u => u.email.toLowerCase().trim() === formattedEmail)) {
+      return { success: false, message: "Email already registered" };
+    }
+
+    const userId = `${userObj.role === 'patient' ? 'PAT' : userObj.role === 'caregiver' ? 'CG' : 'DR'}-${Date.now()}`;
+    const newUser = {
+      ...userObj,
+      id: userId,
+      email: formattedEmail
+    };
+
+    const updatedDb = { ...db };
+
+    if (userObj.role === "patient") {
+      const patientId = "PAT-" + Math.floor(1000 + Math.random() * 9000);
+      newUser.id = patientId;
+      newUser.patient_id = patientId;
+
+      const newPatient = {
+        id: patientId,
+        name: userObj.name,
+        age: parseInt(userObj.age) || 65,
+        gender: "Unknown",
+        stage: cdrToStage(userObj.cdr),
+        sinceDate: userObj.diagnosisDate || "May 2026",
+        photo: "/ramesh_avatar.png", // default senior avatar
+        caregiver: { id: "", name: "", relationship: "", phone: "" },
+        doctor: { id: "", name: "", specialty: "", hospital: "", phone: "" },
+        vitals: { heartRate: 74, bloodPressure: "120/80", weight: "70 kg", oxygenSaturation: "98%" },
+        moodHistory: [],
+        mmseScores: [{ month: new Date().toLocaleDateString([], { month: "short" }), score: parseInt(userObj.mmse) || 25 }]
+      };
+      updatedDb.patients.push(newPatient);
+
+    } else if (userObj.role === "caregiver") {
+      // Link patient IDs
+      userObj.patientIds.forEach(pId => {
+        const patientIndex = updatedDb.patients.findIndex(p => p.id === pId);
+        if (patientIndex !== -1) {
+          updatedDb.patients[patientIndex].caregiver = {
+            id: userId,
+            name: userObj.name,
+            relationship: userObj.relationship,
+            phone: userObj.phone
+          };
+          updatedDb.patients[patientIndex].caregiverId = userId;
+        }
+      });
+    } else if (userObj.role === "doctor") {
+      // Link patient IDs
+      userObj.patientIds.forEach(pId => {
+        const patientIndex = updatedDb.patients.findIndex(p => p.id === pId);
+        if (patientIndex !== -1) {
+          updatedDb.patients[patientIndex].doctor = {
+            id: userId,
+            name: userObj.name,
+            specialty: userObj.specialization,
+            hospital: userObj.hospital,
+            phone: userObj.phone
+          };
+          updatedDb.patients[patientIndex].doctorId = userId;
+        }
+      });
+    }
+
+    users.push(newUser);
+    localStorage.setItem("nb_users", JSON.stringify(users));
+
+    setDb(updatedDb);
+    setCurrentUser(newUser);
+    return { success: true, user: newUser };
+  };
+
+  const logoutUser = () => {
+    setCurrentUser(null);
+  };
 
   // Medicines
   const markMedTaken = (medId, takenTime) => {
@@ -209,6 +432,12 @@ export const AppProvider = ({ children }) => {
   const cancelSOS = () => {
     setSosActive(false);
     setSosData(null);
+    setDb((prev) => ({
+      ...prev,
+      notifications: prev.notifications.map((n) =>
+        n.type === "sos" ? { ...n, read: true } : n
+      ),
+    }));
   };
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -296,8 +525,12 @@ export const AppProvider = ({ children }) => {
     let email = "patient@demo.com";
     if (role === "caregiver") email = "caregiver@demo.com";
     if (role === "doctor") email = "doctor@demo.com";
-    const user = db.users[email];
-    setCurrentUser(user);
+    
+    const users = getStoredUsers();
+    const user = users.find(u => u.email.toLowerCase().trim() === email) || INITIAL_DATA.users[email];
+    if (user) {
+      setCurrentUser(user);
+    }
   };
 
   return (
@@ -308,10 +541,41 @@ export const AppProvider = ({ children }) => {
         // SOS state exposed to all portals
         sosActive,
         sosData,
+        // Active Reminder voice/push alerts
+        activeReminder,
+        sendMedicineReminder: (medName) => {
+          const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          const reminderText = `Hi Ramesh, this is a reminder from Priya. Please remember to take your medicine, ${medName}, now. Thank you!`;
+          
+          setActiveReminder({
+            id: `rem-${Date.now()}`,
+            medName,
+            timestamp,
+            sender: "Priya Sharma",
+            message: reminderText
+          });
+
+          // Add a notification in the database to sync the activities feed across tabs
+          const newNotif = {
+            id: `notif-${Date.now()}`,
+            type: "pill",
+            message: `Caregiver Priya sent a voice medication reminder to Ramesh: "${medName}"`,
+            time: timestamp,
+            read: false,
+          };
+          setDb((prev) => ({
+            ...prev,
+            notifications: [newNotif, ...prev.notifications]
+          }));
+        },
+        clearActiveReminder: () => {
+          setActiveReminder(null);
+        },
         // Auth
         loginUser,
         signupUser,
         logoutUser,
+        verifyPatientId,
         // Medicines
         markMedTaken,
         addPrescription,

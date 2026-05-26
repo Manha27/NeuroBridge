@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Gamepad2, Play, Award, RotateCcw, ArrowLeft, Clock, Sparkles } from "lucide-react";
+import { Brain, Gamepad2, Play, Award, RotateCcw, ArrowLeft, Clock, Sparkles } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 
 export default function PatientGames() {

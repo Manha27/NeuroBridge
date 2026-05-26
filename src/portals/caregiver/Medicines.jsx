@@ -3,7 +3,7 @@ import { Pill, Check, Calendar, Sun, Clock, Moon, RefreshCw, Send, Activity } fr
 import { useApp } from "../../context/AppContext";
 
 export default function CaregiverMedicines() {
-  const { db } = useApp();
+  const { db, sendMedicineReminder } = useApp();
   const [activeTab, setActiveTab] = useState("all");
   
   // Simulated push alert state
@@ -28,6 +28,7 @@ export default function CaregiverMedicines() {
   };
 
   const handleSendReminder = (medName) => {
+    sendMedicineReminder(medName);
     setSentReminder(medName);
     setTimeout(() => {
       setSentReminder(null);

@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Brain, Heart, Users, ClipboardList, ShieldAlert, ChevronRight, Activity, Calendar } from "lucide-react";
+import { Brain, Heart, Users, ClipboardList, ShieldAlert, ChevronRight, Activity, Calendar, Volume2, MapPin, Pill, Video, Phone, Check, CloudSun } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
 export default function LandingPage() {
   const { forceSwitchRole } = useApp();
   const navigate = useNavigate();
+
+  const [demoTab, setDemoTab] = useState("patient");
+  const [demoReminderSent, setDemoReminderSent] = useState(false);
+  const [demoSosActive, setDemoSosActive] = useState(false);
 
   const handleQuickLaunch = (role) => {
     forceSwitchRole(role);
@@ -25,19 +29,19 @@ export default function LandingPage() {
             onClick={() => handleQuickLaunch("patient")}
             className="bg-white/10 hover:bg-white/20 text-white text-xs py-1 px-3 rounded-full transition-all border border-white/20 hover:scale-105 active:scale-95"
           >
-            👴 Ramesh (Patient)
+            Ramesh (Patient)
           </button>
           <button
             onClick={() => handleQuickLaunch("caregiver")}
             className="bg-white/10 hover:bg-white/20 text-white text-xs py-1 px-3 rounded-full transition-all border border-white/20 hover:scale-105 active:scale-95"
           >
-            👩 Priya (Caregiver)
+            Priya (Caregiver)
           </button>
           <button
             onClick={() => handleQuickLaunch("doctor")}
             className="bg-white/10 hover:bg-white/20 text-white text-xs py-1 px-3 rounded-full transition-all border border-white/20 hover:scale-105 active:scale-95"
           >
-            🩺 Dr. Ananya (Doctor)
+            Dr. Ananya (Doctor)
           </button>
         </div>
       </div>
@@ -131,75 +135,208 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Premium Glowing Illustrated SVG Brain Graphic */}
-          <div className="md:col-span-5 flex justify-center items-center select-none relative">
-            <div className="absolute w-72 h-72 bg-primary-light/50 blur-[80px] rounded-full -z-10 animate-pulse" />
-            <svg
-              className="w-full max-w-[420px] h-[380px] filter drop-shadow-xl"
-              viewBox="0 0 400 400"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Outer soft glowing rings */}
-              <circle cx="200" cy="200" r="140" stroke="#2D7DD2" strokeWidth="1.5" strokeDasharray="6 8" strokeOpacity="0.25" className="animate-spin" style={{ animationDuration: '60s' }} />
-              <circle cx="200" cy="200" r="170" stroke="#1D9E75" strokeWidth="1" strokeDasharray="3 12" strokeOpacity="0.15" className="animate-spin" style={{ animationDuration: '40s' }} />
+          {/* High-Fidelity Interactive Live Demo Hub */}
+          <div className="md:col-span-5 flex flex-col items-center">
+            <div className="w-full bg-white border border-border rounded-3xl shadow-soft p-6 space-y-6 relative overflow-hidden text-left">
+              
+              {/* Header */}
+              <div className="flex justify-between items-center border-b border-border pb-4">
+                <span className="text-sm font-bold text-text-primary flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
+                  Interactive Demo Playground
+                </span>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-primary bg-primary-light px-2.5 py-1 rounded-full">
+                  Live View
+                </span>
+              </div>
 
-              {/* Connecting node lines */}
-              <path d="M100 200 C 100 130, 150 90, 200 90 C 250 90, 300 130, 300 200 C 300 270, 250 310, 200 310 C 150 310, 100 270, 100 200 Z" fill="url(#brainGrad)" fillOpacity="0.06" stroke="url(#brainStroke)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="400" strokeDashoffset="0" />
+              {/* Tab selectors */}
+              <div className="grid grid-cols-3 gap-1.5 bg-bg p-1 rounded-full border border-border">
+                <button
+                  type="button"
+                  onClick={() => setDemoTab("patient")}
+                  className={`py-2 px-1 text-center text-xs font-bold rounded-full transition-all cursor-pointer ${
+                    demoTab === "patient"
+                      ? "bg-primary text-white shadow-xs"
+                      : "text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  Patient
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDemoTab("caregiver")}
+                  className={`py-2 px-1 text-center text-xs font-bold rounded-full transition-all cursor-pointer ${
+                    demoTab === "caregiver"
+                      ? "bg-secondary text-white shadow-xs"
+                      : "text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  Caregiver
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDemoTab("doctor")}
+                  className={`py-2 px-1 text-center text-xs font-bold rounded-full transition-all cursor-pointer ${
+                    demoTab === "doctor"
+                      ? "bg-accent text-white shadow-xs"
+                      : "text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  Doctor
+                </button>
+              </div>
 
-              <path d="M150 160 Q 200 200 250 160" stroke="#2D7DD2" strokeWidth="1.5" strokeOpacity="0.4" strokeDasharray="4 4" />
-              <path d="M140 230 Q 200 190 260 230" stroke="#1D9E75" strokeWidth="1.5" strokeOpacity="0.4" strokeDasharray="4 4" />
-              <path d="M200 90 L 200 310" stroke="#F4A259" strokeWidth="1" strokeOpacity="0.2" />
-              <path d="M100 200 L 300 200" stroke="#2D7DD2" strokeWidth="1" strokeOpacity="0.2" />
+              {/* Device Frame */}
+              <div className="border-[6px] border-text-primary/10 rounded-2xl p-4 bg-bg aspect-[4/3] flex flex-col justify-between shadow-inner relative min-h-[260px]">
+                
+                {demoTab === "patient" && (
+                  <div className="flex-grow flex flex-col justify-between text-left space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-black text-sm text-text-primary">Ramesh's Tablet</h4>
+                        <p className="text-[10px] text-text-secondary">Connected Circle • Delhi</p>
+                      </div>
+                      <div className="bg-white border border-border rounded-lg py-1 px-2 text-[10px] font-bold text-text-primary flex items-center gap-1">
+                        <CloudSun className="h-3.5 w-3.5 text-amber-500" /> 32°C
+                      </div>
+                    </div>
 
-              {/* Connections/Dots */}
-              {/* Center Brain Anchor */}
-              <circle cx="200" cy="200" r="28" fill="#FFFFFF" stroke="#2D7DD2" strokeWidth="3" className="filter drop-shadow-md" />
-              <Brain className="text-primary" x="188" y="188" width="24" height="24" />
+                    {demoSosActive ? (
+                      <div className="bg-danger/10 border border-danger/30 p-3 rounded-xl text-center space-y-2 animate-pulse">
+                        <p className="text-xs font-black text-danger uppercase tracking-wider">SOS SIGNAL ACTIVE</p>
+                        <p className="text-[10px] text-text-secondary">Priya & Dr. Ananya have been alerted with live GPS coordinates.</p>
+                        <button
+                          onClick={() => setDemoSosActive(false)}
+                          className="py-1 px-3 bg-text-primary text-white text-[10px] font-bold rounded-full active:scale-95 transition-all cursor-pointer"
+                        >
+                          Cancel SOS Test
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="bg-white border border-border p-3 rounded-xl flex items-center justify-between shadow-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 bg-amber-50 rounded-lg text-amber-500"><Pill size={16} /></div>
+                          <div className="leading-tight">
+                            <p className="text-xs font-bold text-text-primary">Donepezil (10mg)</p>
+                            <p className="text-[9px] text-text-secondary">Morning Dose • 8:00 AM</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if ('speechSynthesis' in window) {
+                              const utterance = new SpeechSynthesisUtterance("Action logged. Donepezil marked as taken.");
+                              utterance.rate = 0.9;
+                              window.speechSynthesis.cancel();
+                              window.speechSynthesis.speak(utterance);
+                            }
+                            alert("Demo: Donepezil marked taken!");
+                          }}
+                          className="py-1 px-2 bg-green-600 text-white text-[10px] font-extrabold rounded-full active:scale-95 transition-all cursor-pointer animate-pulse"
+                        >
+                          Mark Taken
+                        </button>
+                      </div>
+                    )}
 
-              {/* Patient Node */}
-              <g className="translate-x-[20px] translate-y-[-20px] transition-transform duration-500 hover:scale-110">
-                <line x1="80" y1="220" x2="172" y2="200" stroke="#2D7DD2" strokeWidth="1.5" strokeOpacity="0.5" />
-                <circle cx="80" cy="220" r="20" fill="#EBF4FF" stroke="#2D7DD2" strokeWidth="2.5" />
-                <Heart className="text-primary" x="71" y="211" width="18" height="18" />
-                <text x="80" y="255" textAnchor="middle" fill="#1A1A2E" fontSize="12" fontWeight="600">Patient</text>
-              </g>
+                    <button
+                      onClick={() => {
+                        setDemoSosActive(true);
+                        if ('speechSynthesis' in window) {
+                          const utterance = new SpeechSynthesisUtterance("Warning. Ramesh Sharma has triggered an S.O.S alert. Caregiver Priya has been notified.");
+                          utterance.rate = 0.9;
+                          window.speechSynthesis.cancel();
+                          window.speechSynthesis.speak(utterance);
+                        }
+                      }}
+                      className="w-full py-2.5 bg-danger text-white text-xs font-black rounded-xl shadow-md shadow-danger/10 hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5 animate-sos cursor-pointer"
+                    >
+                      <ShieldAlert size={14} /> TRIGGER SOS DEMO
+                    </button>
+                  </div>
+                )}
 
-              {/* Caregiver Node */}
-              <g className="translate-x-[0px] translate-y-[0px]">
-                <line x1="320" y1="220" x2="228" y2="200" stroke="#1D9E75" strokeWidth="1.5" strokeOpacity="0.5" />
-                <circle cx="320" cy="220" r="20" fill="#E8F8F2" stroke="#1D9E75" strokeWidth="2.5" />
-                <Users className="text-secondary" x="311" y="211" width="18" height="18" />
-                <text x="320" y="255" textAnchor="middle" fill="#1A1A2E" fontSize="12" fontWeight="600">Caregiver</text>
-              </g>
+                {demoTab === "caregiver" && (
+                  <div className="flex-grow flex flex-col justify-between text-left space-y-3">
+                    <div>
+                      <h4 className="font-black text-sm text-text-primary">Priya's Mobile</h4>
+                      <p className="text-[10px] text-text-secondary">Caregiver Portal • Active</p>
+                    </div>
 
-              {/* Doctor Node */}
-              <g className="translate-x-[0px] translate-y-[-10px]">
-                <line x1="200" y1="70" x2="200" y2="172" stroke="#F4A259" strokeWidth="1.5" strokeOpacity="0.5" />
-                <circle cx="200" cy="70" r="20" fill="#FFF2E6" stroke="#F4A259" strokeWidth="2.5" />
-                <ClipboardList className="text-accent" x="191" y="61" width="18" height="18" />
-                <text x="200" y="40" textAnchor="middle" fill="#1A1A2E" fontSize="12" fontWeight="600">Doctor</text>
-              </g>
+                    <div className="bg-white border border-border p-3 rounded-xl space-y-2 shadow-xs">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-bold text-text-primary flex items-center gap-1">
+                          <MapPin size={11} className="text-secondary" /> Ramesh's Location
+                        </span>
+                        <span className="text-[9px] bg-secondary/15 text-secondary px-2 py-0.5 rounded-full font-bold">
+                          Safe Zone
+                        </span>
+                      </div>
+                      <div className="h-8 bg-bg rounded-lg border border-border flex items-center justify-center text-[10px] font-semibold text-text-secondary">
+                        📍 12A Block-C, Vasant Vihar
+                      </div>
+                    </div>
 
-              {/* Decorative sparkles/pulses */}
-              <circle cx="140" cy="120" r="4" fill="#2D7DD2" className="animate-ping" style={{ animationDuration: '3s' }} />
-              <circle cx="270" cy="110" r="3" fill="#F4A259" />
-              <circle cx="120" cy="280" r="5" fill="#1D9E75" className="animate-ping" style={{ animationDuration: '4s' }} />
-              <circle cx="260" cy="280" r="3" fill="#E05252" />
+                    {demoReminderSent ? (
+                      <div className="bg-secondary/10 border border-secondary/20 p-2 rounded-xl text-center text-[10px] font-bold text-secondary animate-pulse">
+                        📲 Push reminder transmitted to Ramesh's tablet!
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setDemoReminderSent(true);
+                          if ('speechSynthesis' in window) {
+                            const utterance = new SpeechSynthesisUtterance("Hi Ramesh, this is a reminder from Priya. Please remember to drink some water and take your medication. Love you!");
+                            utterance.rate = 0.85;
+                            window.speechSynthesis.cancel();
+                            window.speechSynthesis.speak(utterance);
+                          }
+                          setTimeout(() => setDemoReminderSent(false), 4000);
+                        }}
+                        className="w-full py-2.5 bg-secondary text-white text-xs font-black rounded-xl active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Volume2 size={14} /> SEND VOICE REMINDER DEMO
+                      </button>
+                    )}
+                  </div>
+                )}
 
-              {/* Definitions */}
-              <defs>
-                <linearGradient id="brainGrad" x1="100" y1="90" x2="300" y2="310" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#2D7DD2" />
-                  <stop offset="50%" stopColor="#1D9E75" />
-                  <stop offset="100%" stopColor="#F4A259" />
-                </linearGradient>
-                <linearGradient id="brainStroke" x1="100" y1="90" x2="300" y2="310" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#2D7DD2" />
-                  <stop offset="100%" stopColor="#1D9E75" />
-                </linearGradient>
-              </defs>
-            </svg>
+                {demoTab === "doctor" && (
+                  <div className="flex-grow flex flex-col justify-between text-left space-y-3">
+                    <div>
+                      <h4 className="font-black text-sm text-text-primary">Dr. Ananya's Desktop</h4>
+                      <p className="text-[10px] text-text-secondary">Clinical Registry • Room 4</p>
+                    </div>
+
+                    <div className="bg-white border border-border p-3 rounded-xl space-y-1.5 shadow-xs">
+                      <p className="text-[10px] font-bold text-text-secondary uppercase">MMSE Cognitive Baseline</p>
+                      <div className="flex items-end justify-between h-8 pt-1 max-w-[120px]">
+                        <div className="w-3 bg-accent/30 h-[60%] rounded-xs" />
+                        <div className="w-3 bg-accent/50 h-[70%] rounded-xs" />
+                        <div className="w-3 bg-accent/70 h-[65%] rounded-xs" />
+                        <div className="w-3 bg-accent h-[75%] rounded-xs" />
+                      </div>
+                      <p className="text-[9px] text-text-secondary font-semibold">Stability Index: 92% (High)</p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        if ('speechSynthesis' in window) {
+                          const utterance = new SpeechSynthesisUtterance("Initiating telemedicine network link. Standard call encryption check secure.");
+                          utterance.rate = 0.95;
+                          window.speechSynthesis.cancel();
+                          window.speechSynthesis.speak(utterance);
+                        }
+                        alert("Demo: Connecting Telehealth Call...");
+                      }}
+                      className="w-full py-2.5 bg-accent text-white text-xs font-black rounded-xl active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Video size={14} /> START TELEHEALTH CALL
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -272,15 +409,21 @@ export default function LandingPage() {
             </p>
             <ul className="space-y-3.5 text-[15px] text-text-primary font-medium">
               <li className="flex items-start gap-2.5">
-                <div className="h-5.5 w-5.5 rounded-full bg-secondary/15 flex items-center justify-center text-secondary shrink-0 mt-0.5">✔</div>
+                <div className="h-5.5 w-5.5 rounded-full bg-secondary/15 flex items-center justify-center text-secondary shrink-0 mt-0.5">
+                  <Check className="h-3.5 w-3.5" />
+                </div>
                 <span>Sync medication taking instantly so double-dosing never occurs.</span>
               </li>
               <li className="flex items-start gap-2.5">
-                <div className="h-5.5 w-5.5 rounded-full bg-secondary/15 flex items-center justify-center text-secondary shrink-0 mt-0.5">✔</div>
+                <div className="h-5.5 w-5.5 rounded-full bg-secondary/15 flex items-center justify-center text-secondary shrink-0 mt-0.5">
+                  <Check className="h-3.5 w-3.5" />
+                </div>
                 <span>A simple interface for the patient that features photos of familiar faces.</span>
               </li>
               <li className="flex items-start gap-2.5">
-                <div className="h-5.5 w-5.5 rounded-full bg-secondary/15 flex items-center justify-center text-secondary shrink-0 mt-0.5">✔</div>
+                <div className="h-5.5 w-5.5 rounded-full bg-secondary/15 flex items-center justify-center text-secondary shrink-0 mt-0.5">
+                  <Check className="h-3.5 w-3.5" />
+                </div>
                 <span>Stay connected with the doctor in private encrypted message feeds.</span>
               </li>
             </ul>
@@ -298,7 +441,9 @@ export default function LandingPage() {
               {/* Visual mini-map mock */}
               <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#1D9E75_1.5px,transparent_1.5px)] [background-size:16px_16px]" />
               <div className="w-24 h-24 rounded-full border-2 border-secondary bg-secondary/10 flex items-center justify-center z-10">
-                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-white animate-bounce shadow-md flex items-center justify-center text-white text-xs font-bold">🏡</div>
+                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-white animate-bounce shadow-md flex items-center justify-center text-white text-xs font-bold">
+                  <MapPin className="h-4.5 w-4.5 text-white" />
+                </div>
               </div>
               <span className="text-xs font-bold text-text-primary z-10">12A Block-C, Vasant Vihar</span>
             </div>
@@ -351,15 +496,21 @@ export default function LandingPage() {
               </p>
               <ul className="space-y-3.5 text-[15px] text-text-primary font-medium">
                 <li className="flex items-start gap-2.5">
-                  <div className="h-5.5 w-5.5 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0 mt-0.5">✔</div>
+                  <div className="h-5.5 w-5.5 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0 mt-0.5">
+                    <Check className="h-3.5 w-3.5" />
+                  </div>
                   <span>Real-time dashboard visualizes longitudinal cognitive scores.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <div className="h-5.5 w-5.5 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0 mt-0.5">✔</div>
+                  <div className="h-5.5 w-5.5 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0 mt-0.5">
+                    <Check className="h-3.5 w-3.5" />
+                  </div>
                   <span>Integrate home-routine directives directly into the digital care plan.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <div className="h-5.5 w-5.5 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0 mt-0.5">✔</div>
+                  <div className="h-5.5 w-5.5 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0 mt-0.5">
+                    <Check className="h-3.5 w-3.5" />
+                  </div>
                   <span>Coordinate telemedicine video reviews with live notes.</span>
                 </li>
               </ul>

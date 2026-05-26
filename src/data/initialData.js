@@ -16,7 +16,7 @@ export const INITIAL_DATA = {
       gender: "Male",
       stage: "Early-stage Alzheimer's",
       sinceDate: "Oct 2025",
-      photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200", // Circular senior avatar
+      photo: "/ramesh_avatar.png", // Circular senior avatar
       caregiver: {
         id: "caregiver-1",
         name: "Priya Sharma",
@@ -37,13 +37,13 @@ export const INITIAL_DATA = {
         oxygenSaturation: "98%"
       },
       moodHistory: [
-        { date: "2026-05-14", mood: "😊" },
-        { date: "2026-05-15", mood: "🙂" },
-        { date: "2026-05-16", mood: "😐" },
-        { date: "2026-05-17", mood: "🙂" },
-        { date: "2026-05-18", mood: "😊" },
-        { date: "2026-05-19", mood: "😊" },
-        { date: "2026-05-20", mood: "😕" }
+        { date: "2026-05-14", mood: "Great" },
+        { date: "2026-05-15", mood: "Good" },
+        { date: "2026-05-16", mood: "Okay" },
+        { date: "2026-05-17", mood: "Good" },
+        { date: "2026-05-18", mood: "Great" },
+        { date: "2026-05-19", mood: "Great" },
+        { date: "2026-05-20", mood: "Confused" }
       ],
       mmseScores: [
         { month: "Nov", score: 28 },
@@ -105,7 +105,7 @@ export const INITIAL_DATA = {
       id: "j-1",
       date: "2026-05-19",
       text: "Priya took me to the garden center today. The scent of marigolds was so familiar, it made me think of my childhood home in Jaipur. We picked up three new shrubs to plant.",
-      mood: "😊",
+      mood: "Great",
       photo: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&q=80&w=400",
       voiceRecorded: false
     },
@@ -113,7 +113,7 @@ export const INITIAL_DATA = {
       id: "j-2",
       date: "2026-05-18",
       text: "Felt a bit confused about the day of the week this morning. Priya helped me check my tablet and calendar. Did the word matching puzzle, got 8/8 matching!",
-      mood: "🙂",
+      mood: "Good",
       photo: null,
       voiceRecorded: true
     },
@@ -121,7 +121,7 @@ export const INITIAL_DATA = {
       id: "j-3",
       date: "2026-05-17",
       text: "Had a call with Suresh. He spoke from Seattle. It was nice hearing his voice, though I forgot his newborn's name for a second. Priya reminded me gently. All is well.",
-      mood: "😐",
+      mood: "Okay",
       photo: null,
       voiceRecorded: false
     },
@@ -129,7 +129,7 @@ export const INITIAL_DATA = {
       id: "j-4",
       date: "2026-05-16",
       text: "Walked around the block. Met Mr. Rajiv. We talked about cricket. Glad to find my way back without checking the app location page.",
-      mood: "😊",
+      mood: "Great",
       photo: null,
       voiceRecorded: false
     },
@@ -137,7 +137,7 @@ export const INITIAL_DATA = {
       id: "j-5",
       date: "2026-05-15",
       text: "A rainy day today. Drank masala chai and watched the rain fall on the plants. Felt slightly lonely but calm.",
-      mood: "🙂",
+      mood: "Good",
       photo: "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?auto=format&fit=crop&q=80&w=400",
       voiceRecorded: false
     }
@@ -150,7 +150,9 @@ export const INITIAL_DATA = {
       relationship: "Daughter",
       phone: "+91 98765 43210",
       avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150",
-      audioText: "Hi Papa, I'm Priya, your daughter. I'm right in the next room if you need me! Remember to check your timeline and let's go for a walk at 5 PM."
+      audioText: "Hi Papa, I'm Priya, your daughter. I'm right in the next room if you need me! Remember to check your timeline and let's go for a walk at 5 PM.",
+      voiceGender: "female",
+      voiceCharacteristic: "calm"
     },
     {
       id: "p-2",
@@ -158,7 +160,9 @@ export const INITIAL_DATA = {
       relationship: "Doctor",
       phone: "+91 11234 5678",
       avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=150",
-      audioText: "Hello Mr. Sharma, this is Dr. Ananya. You are doing fantastic! Keep up with your daily memory puzzles and light walking routines."
+      audioText: "Hello Mr. Sharma, this is Dr. Ananya. You are doing fantastic! Keep up with your daily memory puzzles and light walking routines.",
+      voiceGender: "female",
+      voiceCharacteristic: "professional"
     },
     {
       id: "p-3",
@@ -166,15 +170,19 @@ export const INITIAL_DATA = {
       relationship: "Son",
       phone: "+1 555-0199",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150",
-      audioText: "Hi Dad! It's Suresh. Sending you lots of love from Seattle. I will call you this Sunday evening. Say hello to Priya!"
+      audioText: "Hi Dad! It's Suresh. Sending you lots of love from Seattle. I will call you this Sunday evening. Say hello to Priya!",
+      voiceGender: "male",
+      voiceCharacteristic: "warm"
     },
     {
       id: "p-4",
-      name: "Kavita Sharma",
+      name: "Kavitha Sharma",
       relationship: "Wife",
       phone: "+91 98765 44432",
-      avatar: "https://images.unsplash.com/photo-1581579438747-1dc8d1e0ca96?auto=format&fit=crop&q=80&w=150",
-      audioText: "Hello my dear, I am Kavita. We've been married for 42 wonderful years. I'm sitting right beside you. Would you like a hot cup of tea?"
+      avatar: "/kavitha_sharma.png",
+      audioText: "Hello my dear, I am Kavitha. We've been married for 42 wonderful years. I'm sitting right beside you. Would you like a hot cup of tea?",
+      voiceGender: "female",
+      voiceCharacteristic: "warm"
     },
     {
       id: "p-5",
@@ -182,7 +190,9 @@ export const INITIAL_DATA = {
       relationship: "Friend",
       phone: "+91 98721 00987",
       avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150",
-      audioText: "Hey Ramesh! Rajiv here, your old college buddy. Let's catch up for our evening stroll in the park next Tuesday."
+      audioText: "Hey Ramesh! Rajiv here, your old college buddy. Let's catch up for our evening stroll in the park next Tuesday.",
+      voiceGender: "male",
+      voiceCharacteristic: "friendly"
     }
   ],
 
@@ -332,11 +342,11 @@ export const INITIAL_DATA = {
     radius: 300, // in meters
     sharingEnabled: true,
     currentAddress: "12A Block-C, Vasant Vihar, New Delhi - 110057",
-    status: "Home (Safe Zone ✅)",
+    status: "Home (Safe Zone)",
     history: [
-      { id: "l-1", time: "11:00 AM", address: "Vasant Vihar Central Park (Stroll Zone)", status: "Outside Safe Zone ⚠️" },
-      { id: "l-2", time: "10:15 AM", address: "Market Lane, Block C", status: "Outside Safe Zone ⚠️" },
-      { id: "l-3", time: "08:30 AM", address: "12A Block-C, Vasant Vihar (Home)", status: "Home (Safe Zone ✅)" }
+      { id: "l-1", time: "11:00 AM", address: "Vasant Vihar Central Park (Stroll Zone)", status: "Outside Safe Zone" },
+      { id: "l-2", time: "10:15 AM", address: "Market Lane, Block C", status: "Outside Safe Zone" },
+      { id: "l-3", time: "08:30 AM", address: "12A Block-C, Vasant Vihar (Home)", status: "Home (Safe Zone)" }
     ]
   }
 };
